@@ -131,8 +131,30 @@ export const apiClient = {
   },
   getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
   createRefund: (data: Partial<Refund>) => api.post<Refund>('/refunds', data),
-  requestRefund: (id: string) => api.post<Refund>(`/refunds/${id}/request`),
-  approveRefund: (id: string) => api.post<Refund>(`/refunds/${id}/approve`),
+  requestRefund: (id: string) => {
+    return axios.post<Refund>(`${API_BASE_URL}/refunds/${id}/request`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('userId'),
+        'X-User-Role': localStorage.getItem('userRole'),
+      },
+    }).then(response => {
+      response.data = toCamelCase(response.data);
+      return response;
+    });
+  },
+  approveRefund: (id: string) => {
+    return axios.post<Refund>(`${API_BASE_URL}/refunds/${id}/approve`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('userId'),
+        'X-User-Role': localStorage.getItem('userRole'),
+      },
+    }).then(response => {
+      response.data = toCamelCase(response.data);
+      return response;
+    });
+  },
   
   // Feature Flags
   getFeatureFlags: (params?: { environment?: string; enabled?: boolean }) => {
