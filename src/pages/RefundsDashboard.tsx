@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api';
-import type { Refund } from '../types';
+import type { Refund, User } from '../types';
 import { 
-  User, 
   DollarSign, 
   CheckCircle, 
   XCircle, 
@@ -12,7 +11,8 @@ import {
   Send,
   Search,
   Filter,
-  CreditCard
+  CreditCard,
+  User as UserIcon
 } from 'lucide-react';
 
 const RefundsDashboard: React.FC = () => {
@@ -21,6 +21,7 @@ const RefundsDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const fetchRefunds = async () => {
@@ -42,6 +43,30 @@ const RefundsDashboard: React.FC = () => {
 
     fetchRefunds();
   }, [statusFilter, userRole, user?.id]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.getUsers();
+        // Filter to only support roles
+        const supportUsers = response.data.filter(u => 
+          u.role === 'support_agent' || u.role === 'support_manager'
+        );
+        setAllUsers(supportUsers);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        setAllUsers([]);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const getUserNameById = (userId: string | undefined): string => {
+    if (!userId) return 'Unknown';
+    const user = allUsers.find(u => u.id === userId);
+    return user ? user.name : userId;
+  };
 
   const handleApprove = async (refundId: string) => {
     try {
@@ -119,7 +144,7 @@ const RefundsDashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
+                <UserIcon className="w-4 h-4" />
                 <span>{user?.name}</span>
                 <span className="text-gray-400">•</span>
                 <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
@@ -235,6 +260,7 @@ const RefundsDashboard: React.FC = () => {
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Status</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Reason</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Transaction ID</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Requested By</th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
@@ -260,6 +286,9 @@ const RefundsDashboard: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-600">{refund.reasonCode || 'Unknown'}</td>
                     <td className="py-4 px-4 text-sm text-gray-600 font-mono">{refund.originalTxnId || 'Unknown'}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">
+                      {getUserNameById(refund.requestedBy)}
+                    </td>
                     <td className="py-4 px-4">
                       <div className="flex gap-2">
                         {refund.status === 'submitted' && userRole === 'support_manager' && (

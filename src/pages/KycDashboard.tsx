@@ -59,14 +59,11 @@ const KycDashboard: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        console.log('Fetching users for manager...');
         const response = await apiClient.getUsers();
-        console.log('Users fetched:', response.data);
         // Filter to only compliance roles
         const complianceUsers = response.data.filter(u => 
           u.role === 'compliance_analyst' || u.role === 'compliance_manager'
         );
-        console.log('Compliance users:', complianceUsers);
         setAllUsers(complianceUsers);
       } catch (error) {
         console.error('Failed to fetch users:', error);
@@ -75,10 +72,9 @@ const KycDashboard: React.FC = () => {
       }
     };
 
-    if (userRole === 'compliance_manager') {
-      fetchUsers();
-    }
-  }, [userRole]);
+    // Fetch users for all compliance roles so we can show names
+    fetchUsers();
+  }, []);
 
   const handleDecision = async (caseId: string, decision: 'approved' | 'rejected') => {
     const reason = prompt(`Enter reason for ${decision}:`);
@@ -118,6 +114,12 @@ const KycDashboard: React.FC = () => {
       console.error('Failed to assign case:', error);
       alert('Failed to assign case. Check console for details.');
     }
+  };
+
+  const getUserNameById = (userId: string | undefined): string => {
+    if (!userId) return 'Unassigned';
+    const user = allUsers.find(u => u.id === userId);
+    return user ? user.name : userId;
   };
 
   const getStatusColor = (status: string) => {
@@ -327,7 +329,7 @@ const KycDashboard: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-600">{kycCase.country || 'Unknown'}</td>
                     <td className="py-4 px-4 text-sm text-gray-600">
-                      {kycCase.assignedTo || 'Unassigned'}
+                      {getUserNameById(kycCase.assignedTo)}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex gap-2">
