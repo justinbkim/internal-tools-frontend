@@ -58,6 +58,20 @@ const KycDashboard: React.FC = () => {
     }
   };
 
+  const handleAssign = async (caseId: string) => {
+    try {
+      await apiClient.updateKycCase(caseId, { 
+        status: 'in_review',
+        assigned_to: user?.id 
+      });
+      // Refresh cases
+      const response = await apiClient.getKycCases();
+      setKycCases(response.data);
+    } catch (error) {
+      console.error('Failed to assign case:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new': return 'bg-gray-100 text-gray-700';
@@ -286,7 +300,10 @@ const KycDashboard: React.FC = () => {
                           </>
                         )}
                         {kycCase.status === 'new' && (
-                          <button className="btn-primary text-xs px-3 py-1">
+                          <button 
+                            onClick={() => handleAssign(kycCase.id)}
+                            className="btn-primary text-xs px-3 py-1"
+                          >
                             Assign
                           </button>
                         )}
