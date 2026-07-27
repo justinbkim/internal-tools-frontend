@@ -82,5 +82,4 @@ export const apiClient = {
     api.get<AuditLogEntry[]>('/audit', { params }),
 };
 
-export { getPublicUsers };
 export default api;

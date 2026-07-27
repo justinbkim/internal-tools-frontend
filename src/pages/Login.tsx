@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { apiClient, getPublicUsers } from '../lib/api';
+import { getPublicUsers } from '../lib/api';
 import type { User } from '../types';
 
 const Login: React.FC = () => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api';
 import type { Refund } from '../types';
-import { DollarSign, CheckCircle, XCircle, Clock, AlertTriangle, Send } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, Send } from 'lucide-react';
 
 const RefundsDashboard: React.FC = () => {
   const { user, userRole, logout } = useAuth();
