@@ -115,10 +115,16 @@ export const apiClient = {
     if (params?.requestedBy) queryString.append('requested_by', params.requestedBy);
     if (params?.amountCentsMin) queryString.append('amount_cents_min', params.amountCentsMin.toString());
     if (params?.amountCentsMax) queryString.append('amount_cents_max', params.amountCentsMax.toString());
-    const url = queryString.toString() ? `/refunds?${queryString.toString()}` : '/refunds';
-    console.log('Manual URL construction:', url);
+    const url = queryString.toString() ? `${API_BASE_URL}/refunds?${queryString.toString()}` : `${API_BASE_URL}/refunds`;
+    console.log('Full URL with base:', url);
     console.log('With params:', params);
-    return api.get<Refund[]>(url, { params: undefined }); // Explicitly disable params
+    return axios.get<Refund[]>(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('userId'),
+        'X-User-Role': localStorage.getItem('userRole'),
+      },
+    });
   },
   getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
   createRefund: (data: Partial<Refund>) => api.post<Refund>('/refunds', data),
