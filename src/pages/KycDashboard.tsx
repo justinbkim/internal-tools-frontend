@@ -22,6 +22,10 @@ const KycDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedCaseForAssign, setSelectedCaseForAssign] = useState<string | null>(null);
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('');
 
   useEffect(() => {
     const fetchKycCases = async () => {
@@ -44,6 +48,25 @@ const KycDashboard: React.FC = () => {
     fetchKycCases();
   }, [statusFilter, userRole, user?.id]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.getUsers();
+        // Filter to only compliance roles
+        const complianceUsers = response.data.filter(u => 
+          u.role === 'compliance_analyst' || u.role === 'compliance_manager'
+        );
+        setAllUsers(complianceUsers);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+
+    if (userRole === 'compliance_manager') {
+      fetchUsers();
+    }
+  }, [userRole]);
+
   const handleDecision = async (caseId: string, decision: 'approved' | 'rejected') => {
     const reason = prompt(`Enter reason for ${decision}:`);
     if (reason) {
@@ -59,19 +82,25 @@ const KycDashboard: React.FC = () => {
   };
 
   const handleAssign = async (caseId: string) => {
-    console.log('Assign button clicked for case:', caseId);
-    console.log('Current user:', user);
+    setSelectedCaseForAssign(caseId);
+    setSelectedAssignee('');
+    setAssignModalOpen(true);
+  };
+
+  const confirmAssign = async () => {
+    if (!selectedCaseForAssign || !selectedAssignee) return;
+
     try {
-      console.log('Calling updateKycCase with:', { status: 'in_review', assignedTo: user?.id });
-      await apiClient.updateKycCase(caseId, { 
+      await apiClient.updateKycCase(selectedCaseForAssign, { 
         status: 'in_review',
-        assignedTo: user?.id 
+        assignedTo: selectedAssignee 
       });
-      console.log('Update successful, refreshing cases');
       // Refresh cases
       const response = await apiClient.getKycCases();
       setKycCases(response.data);
-      console.log('Cases refreshed successfully');
+      setAssignModalOpen(false);
+      setSelectedCaseForAssign(null);
+      setSelectedAssignee('');
     } catch (error) {
       console.error('Failed to assign case:', error);
       alert('Failed to assign case. Check console for details.');
@@ -305,7 +334,7 @@ const KycDashboard: React.FC = () => {
                             </button>
                           </>
                         )}
-                        {kycCase.status === 'new' && (
+                        {kycCase.status === 'new' && userRole === 'compliance_manager' && (
                           <button 
                             onClick={() => handleAssign(kycCase.id)}
                             className="btn-primary text-xs px-3 py-1"
@@ -328,6 +357,47 @@ const KycDashboard: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Assign Modal */}
+        {assignModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="card max-w-md w-full">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign KYC Case</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Assignee
+                </label>
+                <select
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  className="select-field"
+                >
+                  <option value="">Choose a compliance user...</option>
+                  {allUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.role.replace('_', ' ')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setAssignModalOpen(false)}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAssign}
+                  disabled={!selectedAssignee}
+                  className="btn-primary"
+                >
+                  Assign
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
