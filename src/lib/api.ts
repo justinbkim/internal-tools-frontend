@@ -25,8 +25,9 @@ api.interceptors.request.use((config) => {
 
 // Special function for login page that uses dummy auth headers
 export const getPublicUsers = () => {
-  return api.get<User[]>('/users', {
+  return axios.get<User[]>(`${API_BASE_URL}/users`, {
     headers: {
+      'Content-Type': 'application/json',
       'X-User-Id': 'login-fetch',
       'X-User-Role': 'compliance_manager',
     },
