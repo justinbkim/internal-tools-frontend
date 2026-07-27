@@ -23,6 +23,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Special function for login page that uses dummy auth headers
+export const getPublicUsers = () => {
+  return api.get<User[]>('/users', {
+    headers: {
+      'X-User-Id': 'login-fetch',
+      'X-User-Role': 'compliance_manager',
+    },
+  });
+};
+
 export const apiClient = {
   // Health
   health: () => api.get('/health'),
@@ -71,4 +81,5 @@ export const apiClient = {
     api.get<AuditLogEntry[]>('/audit', { params }),
 };
 
+export { getPublicUsers };
 export default api;

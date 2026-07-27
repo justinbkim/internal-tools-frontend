@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { apiClient } from '../lib/api';
+import { apiClient, getPublicUsers } from '../lib/api';
 import type { User } from '../types';
 
 const Login: React.FC = () => {
@@ -14,7 +14,7 @@ const Login: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.getUsers();
+        const response = await getPublicUsers();
         setUsers(response.data);
         setLoading(false);
       } catch (error) {
