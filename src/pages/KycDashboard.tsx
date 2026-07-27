@@ -59,16 +59,22 @@ const KycDashboard: React.FC = () => {
   };
 
   const handleAssign = async (caseId: string) => {
+    console.log('Assign button clicked for case:', caseId);
+    console.log('Current user:', user);
     try {
+      console.log('Calling updateKycCase with:', { status: 'in_review', assignedTo: user?.id });
       await apiClient.updateKycCase(caseId, { 
         status: 'in_review',
         assignedTo: user?.id 
       });
+      console.log('Update successful, refreshing cases');
       // Refresh cases
       const response = await apiClient.getKycCases();
       setKycCases(response.data);
+      console.log('Cases refreshed successfully');
     } catch (error) {
       console.error('Failed to assign case:', error);
+      alert('Failed to assign case. Check console for details.');
     }
   };
 
