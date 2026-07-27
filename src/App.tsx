@@ -25,13 +25,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: string
 };
 
 const Unauthorized: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="card max-w-md text-center">
       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <Shield className="w-8 h-8 text-red-600" />
       </div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-2">Unauthorized Access</h1>
-      <p className="text-slate-600 mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 mb-2">Unauthorized Access</h1>
+      <p className="text-gray-600 mb-6">
         You don't have permission to access this page. Please contact your administrator if you believe this is an error.
       </p>
       <button

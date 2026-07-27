@@ -60,13 +60,13 @@ const KycDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'new': return 'bg-slate-100 text-slate-700';
+      case 'new': return 'bg-gray-100 text-gray-700';
       case 'in_review': return 'bg-blue-100 text-blue-700';
       case 'pending_info': return 'bg-amber-100 text-amber-700';
       case 'approved': return 'bg-emerald-100 text-emerald-700';
       case 'rejected': return 'bg-red-100 text-red-700';
       case 'escalated': return 'bg-purple-100 text-purple-700';
-      default: return 'bg-slate-100 text-slate-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -95,19 +95,19 @@ const KycDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-slate-600 font-medium">Loading KYC cases...</div>
+          <div className="text-gray-600 font-medium">Loading KYC cases...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
@@ -115,15 +115,15 @@ const KycDashboard: React.FC = () => {
                 <Shield className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900">KYC Review</h1>
-                <p className="text-sm text-slate-600">Compliance dashboard</p>
+                <h1 className="text-xl font-semibold text-gray-900">KYC Review</h1>
+                <p className="text-sm text-gray-600">Compliance dashboard</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-slate-600">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="w-4 h-4" />
                 <span>{user?.name}</span>
-                <span className="text-slate-400">•</span>
+                <span className="text-gray-400">•</span>
                 <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
                   {userRole?.replace('_', ' ')}
                 </span>
@@ -145,8 +145,8 @@ const KycDashboard: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Total Cases</p>
-                <p className="text-2xl font-bold text-slate-900">{kycCases.length}</p>
+                <p className="text-sm text-gray-600 mb-1">Total Cases</p>
+                <p className="text-2xl font-bold text-gray-900">{kycCases.length}</p>
               </div>
               <div className="p-3 bg-indigo-100 rounded-lg">
                 <FileText className="w-6 h-6 text-indigo-600" />
@@ -156,8 +156,8 @@ const KycDashboard: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">In Review</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-sm text-gray-600 mb-1">In Review</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {kycCases.filter(c => c.status === 'in_review').length}
                 </p>
               </div>
@@ -169,8 +169,8 @@ const KycDashboard: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Approved</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-sm text-gray-600 mb-1">Approved</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {kycCases.filter(c => c.status === 'approved').length}
                 </p>
               </div>
@@ -182,8 +182,8 @@ const KycDashboard: React.FC = () => {
           <div className="card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">High Risk</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-sm text-gray-600 mb-1">High Risk</p>
+                <p className="text-2xl font-bold text-gray-900">
                   {kycCases.filter(c => c.risk_score >= 70).length}
                 </p>
               </div>
@@ -198,7 +198,7 @@ const KycDashboard: React.FC = () => {
         <div className="card mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -trangray-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by name or email..."
@@ -208,7 +208,7 @@ const KycDashboard: React.FC = () => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-slate-400" />
+              <Filter className="w-5 h-5 text-gray-400" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -231,22 +231,22 @@ const KycDashboard: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Applicant</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Risk Score</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Country</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Assigned To</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Actions</th>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Applicant</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Status</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Risk Score</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Country</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Assigned To</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCases.map((kycCase) => (
-                  <tr key={kycCase.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <tr key={kycCase.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-4">
                       <div>
-                        <div className="font-medium text-slate-900">{kycCase.applicant_name}</div>
-                        <div className="text-sm text-slate-600">{kycCase.email}</div>
+                        <div className="font-medium text-gray-900">{kycCase.applicant_name}</div>
+                        <div className="text-sm text-gray-600">{kycCase.email}</div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -257,14 +257,14 @@ const KycDashboard: React.FC = () => {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-slate-400" />
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
                         <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.risk_score)}`}>
                           {kycCase.risk_score}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-sm text-slate-600">{kycCase.country}</td>
-                    <td className="py-4 px-4 text-sm text-slate-600">
+                    <td className="py-4 px-4 text-sm text-gray-600">{kycCase.country}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">
                       {kycCase.assigned_to || 'Unassigned'}
                     </td>
                     <td className="py-4 px-4">
@@ -300,8 +300,8 @@ const KycDashboard: React.FC = () => {
           
           {filteredCases.length === 0 && (
             <div className="text-center py-12">
-              <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-600">No KYC cases found</p>
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600">No KYC cases found</p>
             </div>
           )}
         </div>
