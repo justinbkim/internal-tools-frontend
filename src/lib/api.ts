@@ -117,7 +117,8 @@ export const apiClient = {
     if (params?.amountCentsMax) queryString.append('amount_cents_max', params.amountCentsMax.toString());
     const url = queryString.toString() ? `/refunds?${queryString.toString()}` : '/refunds';
     console.log('Manual URL construction:', url);
-    return api.get<Refund[]>(url);
+    console.log('With params:', params);
+    return api.get<Refund[]>(url, { params: undefined }); // Explicitly disable params
   },
   getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
   createRefund: (data: Partial<Refund>) => api.post<Refund>('/refunds', data),
