@@ -87,8 +87,8 @@ const RefundsDashboard: React.FC = () => {
   };
 
   const filteredRefunds = refunds.filter(refund => 
-    refund.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    refund.originalTxnId.toLowerCase().includes(searchQuery.toLowerCase())
+    (refund.customerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (refund.originalTxnId?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -242,24 +242,24 @@ const RefundsDashboard: React.FC = () => {
                 {filteredRefunds.map((refund) => (
                   <tr key={refund.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-4">
-                      <div className="font-medium text-gray-900">{refund.customerName}</div>
+                      <div className="font-medium text-gray-900">{refund.customerName || 'Unknown'}</div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getAmountColor(refund.amountCents)}`}>
-                          ${(refund.amountCents / 100).toFixed(2)}
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getAmountColor(refund.amountCents || 0)}`}>
+                          ${((refund.amountCents || 0) / 100).toFixed(2)}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(refund.status)}`}>
                         {getStatusIcon(refund.status)}
-                        {refund.status.replace('_', ' ')}
+                        {refund.status?.replace('_', ' ') || 'Unknown'}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">{refund.reasonCode}</td>
-                    <td className="py-4 px-4 text-sm text-gray-600 font-mono">{refund.originalTxnId}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">{refund.reasonCode || 'Unknown'}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600 font-mono">{refund.originalTxnId || 'Unknown'}</td>
                     <td className="py-4 px-4">
                       <div className="flex gap-2">
                         {refund.status === 'submitted' && userRole === 'support_manager' && (

@@ -67,8 +67,8 @@ const FeatureFlags: React.FC = () => {
   };
 
   const filteredFlags = flags.filter(flag => 
-    flag.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    flag.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (flag.key?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (flag.description?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -238,14 +238,14 @@ const FeatureFlags: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Sliders className="w-4 h-4 text-gray-400" />
                         <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRolloutColor(flag.rolloutPercentage)}`}>
-                          {flag.rolloutPercentage}%
+                          {flag.rolloutPercentage || 0}%
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getEnvironmentColor(flag.environment)}`}>
                         <Globe className="w-3 h-3" />
-                        {flag.environment}
+                        {flag.environment || 'Unknown'}
                       </span>
                     </td>
                     <td className="py-4 px-4">

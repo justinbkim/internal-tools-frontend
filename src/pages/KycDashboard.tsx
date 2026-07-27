@@ -151,8 +151,8 @@ const KycDashboard: React.FC = () => {
   };
 
   const filteredCases = kycCases.filter(kycCase => 
-    kycCase.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    kycCase.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (kycCase.applicantName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (kycCase.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -307,25 +307,25 @@ const KycDashboard: React.FC = () => {
                   <tr key={kycCase.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-4">
                       <div>
-                        <div className="font-medium text-gray-900">{kycCase.applicantName}</div>
-                        <div className="text-sm text-gray-600">{kycCase.email}</div>
+                        <div className="font-medium text-gray-900">{kycCase.applicantName || 'Unknown'}</div>
+                        <div className="text-sm text-gray-600">{kycCase.email || 'No email'}</div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(kycCase.status)}`}>
                         {getStatusIcon(kycCase.status)}
-                        {kycCase.status.replace('_', ' ')}
+                        {kycCase.status?.replace('_', ' ') || 'Unknown'}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-gray-400" />
-                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.riskScore)}`}>
-                          {kycCase.riskScore}
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.riskScore || 0)}`}>
+                          {kycCase.riskScore || 0}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">{kycCase.country}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">{kycCase.country || 'Unknown'}</td>
                     <td className="py-4 px-4 text-sm text-gray-600">
                       {kycCase.assignedTo || 'Unassigned'}
                     </td>
