@@ -6,7 +6,6 @@ import {
   User, 
   Settings, 
   Power, 
-  Zap, 
   Search,
   Filter,
   ToggleLeft,

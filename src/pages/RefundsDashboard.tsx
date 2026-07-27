@@ -12,8 +12,7 @@ import {
   Send,
   Search,
   Filter,
-  CreditCard,
-  TrendingUp
+  CreditCard
 } from 'lucide-react';
 
 const RefundsDashboard: React.FC = () => {
