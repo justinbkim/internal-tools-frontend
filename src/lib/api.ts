@@ -129,8 +129,30 @@ export const apiClient = {
       return response;
     });
   },
-  getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
-  createRefund: (data: Partial<Refund>) => api.post<Refund>('/refunds', data),
+  getRefund: (id: string) => {
+    return axios.get<Refund>(`${API_BASE_URL}/refunds/${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('userId'),
+        'X-User-Role': localStorage.getItem('userRole'),
+      },
+    }).then(response => {
+      response.data = toCamelCase(response.data);
+      return response;
+    });
+  },
+  createRefund: (data: Partial<Refund>) => {
+    return axios.post<Refund>(`${API_BASE_URL}/refunds`, toSnakeCase(data), {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': localStorage.getItem('userId'),
+        'X-User-Role': localStorage.getItem('userRole'),
+      },
+    }).then(response => {
+      response.data = toCamelCase(response.data);
+      return response;
+    });
+  },
   requestRefund: (id: string) => {
     return axios.post<Refund>(`${API_BASE_URL}/refunds/${id}/request`, {}, {
       headers: {
