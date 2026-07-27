@@ -118,6 +118,8 @@ export const apiClient = {
     const url = queryString.toString() ? `${API_BASE_URL}/refunds?${queryString.toString()}` : `${API_BASE_URL}/refunds`;
     console.log('Full URL with base:', url);
     console.log('With params:', params);
+    console.log('queryString:', queryString.toString());
+    
     return axios.get<Refund[]>(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +127,10 @@ export const apiClient = {
         'X-User-Role': localStorage.getItem('userRole'),
       },
     }).then(response => {
+      console.log('Raw response data:', response.data);
+      console.log('Response data length:', response.data.length);
       response.data = toCamelCase(response.data);
+      console.log('Converted response data:', response.data);
       return response;
     });
   },
