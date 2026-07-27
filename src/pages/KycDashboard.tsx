@@ -54,7 +54,7 @@ const KycDashboard: React.FC = () => {
       console.log('No user, skipping fetch');
       setLoading(false);
     }
-  }, [statusFilter, userRole, user?.id, user]);
+  }, [statusFilter, userRole, user?.id]);
 
   useEffect(() => {
     const fetchUsers = async () => {

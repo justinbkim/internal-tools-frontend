@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import KycDashboard from './pages/KycDashboard';
 import RefundsDashboard from './pages/RefundsDashboard';
 import FeatureFlags from './pages/FeatureFlags';
+import ErrorBoundary from './ErrorBoundary';
 import { Shield } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: string[] }> = ({ 
@@ -91,7 +92,9 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <ErrorBoundary>
+          <AppRoutes />
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );
