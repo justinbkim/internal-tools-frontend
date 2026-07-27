@@ -48,19 +48,11 @@ api.interceptors.response.use((response) => {
   return response;
 });
 
-// Combined request interceptor to handle both auth and case conversion
+// Combined request interceptor to handle auth only
 api.interceptors.request.use((config) => {
-  // Convert camelCase to snake_case for data and params
+  // Convert camelCase to snake_case for data only (not params anymore)
   if (config.data) {
     config.data = toSnakeCase(config.data);
-  }
-  if (config.params) {
-    console.log('Original params:', config.params);
-    const convertedParams = toSnakeCase(config.params);
-    console.log('Converted params:', convertedParams);
-    config.params = convertedParams;
-    console.log('Final config.params:', config.params);
-    console.log('Full config URL:', config.baseURL + config.url);
   }
 
   // Add auth headers
@@ -98,8 +90,15 @@ export const apiClient = {
   getUser: (id: string) => api.get<User>(`/users/${id}`),
   
   // KYC Cases
-  getKycCases: (params?: { status?: string; assignedTo?: string; riskScoreMin?: number; riskScoreMax?: number }) =>
-    api.get<KycCase[]>('/kyc/cases', { params }),
+  getKycCases: (params?: { status?: string; assignedTo?: string; riskScoreMin?: number; riskScoreMax?: number }) => {
+    const queryString = new URLSearchParams();
+    if (params?.status) queryString.append('status', params.status);
+    if (params?.assignedTo) queryString.append('assigned_to', params.assignedTo);
+    if (params?.riskScoreMin) queryString.append('risk_score_min', params.riskScoreMin.toString());
+    if (params?.riskScoreMax) queryString.append('risk_score_max', params.riskScoreMax.toString());
+    const url = queryString.toString() ? `/kyc/cases?${queryString.toString()}` : '/kyc/cases';
+    return api.get<KycCase[]>(url);
+  },
   getKycCase: (id: string) => api.get<KycCase>(`/kyc/cases/${id}`),
   createKycCase: (data: Partial<KycCase>) => api.post<KycCase>('/kyc/cases', data),
   updateKycCase: (id: string, data: Partial<KycCase>) => api.patch<KycCase>(`/kyc/cases/${id}`, data),
@@ -110,16 +109,29 @@ export const apiClient = {
     api.post(`/kyc/cases/${caseId}/documents`, data),
   
   // Refunds
-  getRefunds: (params?: { status?: string; requestedBy?: string; amountCentsMin?: number; amountCentsMax?: number }) =>
-    api.get<Refund[]>('/refunds', { params }),
+  getRefunds: (params?: { status?: string; requestedBy?: string; amountCentsMin?: number; amountCentsMax?: number }) => {
+    const queryString = new URLSearchParams();
+    if (params?.status) queryString.append('status', params.status);
+    if (params?.requestedBy) queryString.append('requested_by', params.requestedBy);
+    if (params?.amountCentsMin) queryString.append('amount_cents_min', params.amountCentsMin.toString());
+    if (params?.amountCentsMax) queryString.append('amount_cents_max', params.amountCentsMax.toString());
+    const url = queryString.toString() ? `/refunds?${queryString.toString()}` : '/refunds';
+    console.log('Manual URL construction:', url);
+    return api.get<Refund[]>(url);
+  },
   getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
   createRefund: (data: Partial<Refund>) => api.post<Refund>('/refunds', data),
   requestRefund: (id: string) => api.post<Refund>(`/refunds/${id}/request`),
   approveRefund: (id: string) => api.post<Refund>(`/refunds/${id}/approve`),
   
   // Feature Flags
-  getFeatureFlags: (params?: { environment?: string; enabled?: boolean }) =>
-    api.get<FeatureFlag[]>('/flags', { params }),
+  getFeatureFlags: (params?: { environment?: string; enabled?: boolean }) => {
+    const queryString = new URLSearchParams();
+    if (params?.environment) queryString.append('environment', params.environment);
+    if (params?.enabled !== undefined) queryString.append('enabled', params.enabled.toString());
+    const url = queryString.toString() ? `/flags?${queryString.toString()}` : '/flags';
+    return api.get<FeatureFlag[]>(url);
+  },
   getFeatureFlag: (key: string) => api.get<FeatureFlag>(`/flags/${key}`),
   createFeatureFlag: (data: Partial<FeatureFlag>) => api.post<FeatureFlag>('/flags', data),
   updateFeatureFlag: (key: string, data: Partial<FeatureFlag>) => api.patch<FeatureFlag>(`/flags/${key}`, data),
@@ -127,14 +139,25 @@ export const apiClient = {
   toggleFeatureFlag: (key: string) => api.post<FeatureFlag>(`/flags/${key}/toggle`),
   
   // Saved Views
-  getSavedViews: (entityType: string) => api.get<SavedView[]>('/saved-views', { params: { entityType } }),
+  getSavedViews: (entityType: string) => {
+    const queryString = new URLSearchParams();
+    queryString.append('entity_type', entityType);
+    return api.get<SavedView[]>(`/saved-views?${queryString.toString()}`);
+  },
   createSavedView: (data: Partial<SavedView>) => api.post<SavedView>('/saved-views', data),
   getSavedView: (id: string) => api.get<SavedView>(`/saved-views/${id}`),
   deleteSavedView: (id: string) => api.delete(`/saved-views/${id}`),
   
   // Audit Log
-  getAuditLog: (params?: { entityType?: string; entityId?: string; actorId?: string; limit?: number }) =>
-    api.get<AuditLogEntry[]>('/audit', { params }),
+  getAuditLog: (params?: { entityType?: string; entityId?: string; actorId?: string; limit?: number }) => {
+    const queryString = new URLSearchParams();
+    if (params?.entityType) queryString.append('entity_type', params.entityType);
+    if (params?.entityId) queryString.append('entity_id', params.entityId);
+    if (params?.actorId) queryString.append('actor_id', params.actorId);
+    if (params?.limit) queryString.append('limit', params.limit.toString());
+    const url = queryString.toString() ? `/audit?${queryString.toString()}` : '/audit';
+    return api.get<AuditLogEntry[]>(url);
+  },
 };
 
 export default api;
