@@ -97,9 +97,4 @@ const App: React.FC = () => {
   );
 };
 
-// Simple test to verify React is working
-if (process.env.NODE_ENV === 'development') {
-  console.log('React app loaded successfully');
-}
-
 export default App;

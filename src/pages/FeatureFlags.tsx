@@ -149,7 +149,7 @@ const FeatureFlags: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">In Rollout</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {flags.filter(f => f.enabled && f.rollout_percentage > 0 && f.rollout_percentage < 100).length}
+                  {flags.filter(f => f.enabled && f.rolloutPercentage > 0 && f.rolloutPercentage < 100).length}
                 </p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
@@ -237,8 +237,8 @@ const FeatureFlags: React.FC = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <Sliders className="w-4 h-4 text-gray-400" />
-                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRolloutColor(flag.rollout_percentage)}`}>
-                          {flag.rollout_percentage}%
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRolloutColor(flag.rolloutPercentage)}`}>
+                          {flag.rolloutPercentage}%
                         </span>
                       </div>
                     </td>

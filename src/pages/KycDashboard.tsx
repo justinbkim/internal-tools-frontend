@@ -29,7 +29,7 @@ const KycDashboard: React.FC = () => {
         const params: any = {};
         if (statusFilter) params.status = statusFilter;
         if (userRole === 'compliance_analyst') {
-          params.assigned_to = user?.id;
+          params.assignedTo = user?.id;
         }
         
         const response = await apiClient.getKycCases(params);
@@ -62,7 +62,7 @@ const KycDashboard: React.FC = () => {
     try {
       await apiClient.updateKycCase(caseId, { 
         status: 'in_review',
-        assigned_to: user?.id 
+        assignedTo: user?.id 
       });
       // Refresh cases
       const response = await apiClient.getKycCases();
@@ -103,7 +103,7 @@ const KycDashboard: React.FC = () => {
   };
 
   const filteredCases = kycCases.filter(kycCase => 
-    kycCase.applicant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    kycCase.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     kycCase.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -198,7 +198,7 @@ const KycDashboard: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">High Risk</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {kycCases.filter(c => c.risk_score >= 70).length}
+                  {kycCases.filter(c => c.riskScore >= 70).length}
                 </p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg">
@@ -259,7 +259,7 @@ const KycDashboard: React.FC = () => {
                   <tr key={kycCase.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-4">
                       <div>
-                        <div className="font-medium text-gray-900">{kycCase.applicant_name}</div>
+                        <div className="font-medium text-gray-900">{kycCase.applicantName}</div>
                         <div className="text-sm text-gray-600">{kycCase.email}</div>
                       </div>
                     </td>
@@ -272,14 +272,14 @@ const KycDashboard: React.FC = () => {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-gray-400" />
-                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.risk_score)}`}>
-                          {kycCase.risk_score}
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.riskScore)}`}>
+                          {kycCase.riskScore}
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-sm text-gray-600">{kycCase.country}</td>
                     <td className="py-4 px-4 text-sm text-gray-600">
-                      {kycCase.assigned_to || 'Unassigned'}
+                      {kycCase.assignedTo || 'Unassigned'}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex gap-2">

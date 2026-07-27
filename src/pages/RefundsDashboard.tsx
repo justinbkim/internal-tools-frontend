@@ -28,7 +28,7 @@ const RefundsDashboard: React.FC = () => {
         const params: any = {};
         if (statusFilter) params.status = statusFilter;
         if (userRole === 'support_agent') {
-          params.requested_by = user?.id;
+          params.requestedBy = user?.id;
         }
         
         const response = await apiClient.getRefunds(params);
@@ -87,8 +87,8 @@ const RefundsDashboard: React.FC = () => {
   };
 
   const filteredRefunds = refunds.filter(refund => 
-    refund.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    refund.original_txn_id.toLowerCase().includes(searchQuery.toLowerCase())
+    refund.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    refund.originalTxnId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -182,7 +182,7 @@ const RefundsDashboard: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">High Value</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {refunds.filter(r => r.amount_cents >= 50000).length}
+                  {refunds.filter(r => r.amountCents >= 50000).length}
                 </p>
               </div>
               <div className="p-3 bg-red-100 rounded-lg">
@@ -242,13 +242,13 @@ const RefundsDashboard: React.FC = () => {
                 {filteredRefunds.map((refund) => (
                   <tr key={refund.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-4">
-                      <div className="font-medium text-gray-900">{refund.customer_name}</div>
+                      <div className="font-medium text-gray-900">{refund.customerName}</div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getAmountColor(refund.amount_cents)}`}>
-                          ${(refund.amount_cents / 100).toFixed(2)}
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getAmountColor(refund.amountCents)}`}>
+                          ${(refund.amountCents / 100).toFixed(2)}
                         </span>
                       </div>
                     </td>
@@ -258,8 +258,8 @@ const RefundsDashboard: React.FC = () => {
                         {refund.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">{refund.reason_code}</td>
-                    <td className="py-4 px-4 text-sm text-gray-600 font-mono">{refund.original_txn_id}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">{refund.reasonCode}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600 font-mono">{refund.originalTxnId}</td>
                     <td className="py-4 px-4">
                       <div className="flex gap-2">
                         {refund.status === 'submitted' && userRole === 'support_manager' && (

@@ -10,63 +10,63 @@ export interface User {
 
 export interface KycCase {
   id: string;
-  applicant_name: string;
+  applicantName: string;
   dob: string;
-  tax_id: string;
+  taxId: string;
   email: string;
   country: string;
-  risk_score: number;
-  flag_reason?: string;
+  riskScore: number;
+  flagReason?: string;
   status: 'new' | 'in_review' | 'pending_info' | 'approved' | 'rejected' | 'escalated';
-  assigned_to?: string;
-  decision_reason?: string;
-  decided_by?: string;
-  decided_at?: string;
-  created_at: string;
+  assignedTo?: string;
+  decisionReason?: string;
+  decidedBy?: string;
+  decidedAt?: string;
+  createdAt: string;
 }
 
 export interface Refund {
   id: string;
-  customer_name: string;
-  original_txn_id: string;
-  amount_cents: number;
-  reason_code: string;
+  customerName: string;
+  originalTxnId: string;
+  amountCents: number;
+  reasonCode: string;
   status: 'pending' | 'approved' | 'denied' | 'submitted' | 'settled' | 'failed';
-  requested_by: string;
-  approved_by?: string;
-  requested_at: string;
-  decided_at?: string;
+  requestedBy: string;
+  approvedBy?: string;
+  requestedAt: string;
+  decidedAt?: string;
 }
 
 export interface FeatureFlag {
   key: string;
   description: string;
   enabled: boolean;
-  rollout_percentage: number;
+  rolloutPercentage: number;
   environment: 'dev' | 'staging' | 'prod';
-  updated_by: string;
-  updated_at: string;
+  updatedBy: string;
+  updatedAt: string;
 }
 
 export interface SavedView {
   id: string;
   name: string;
-  entity_type: 'kyc_cases' | 'refunds';
-  filter_json: any;
-  visible_columns: string[];
-  sort_json: any;
-  owner_role: string;
+  entityType: 'kyc_cases' | 'refunds';
+  filterJson: any;
+  visibleColumns: string[];
+  sortJson: any;
+  ownerRole: string;
 }
 
 export interface AuditLogEntry {
   id: string;
-  actor_id: string;
-  actor_role: string;
+  actorId: string;
+  actorRole: string;
   action: string;
-  entity_type: string;
-  entity_id: string;
-  before_json?: any;
-  after_json?: any;
+  entityType: string;
+  entityId: string;
+  beforeJson?: any;
+  afterJson?: any;
   reason?: string;
-  created_at: string;
+  createdAt: string;
 }
