@@ -95,9 +95,11 @@ const KycDashboard: React.FC = () => {
   };
 
   const handleAssign = async (caseId: string) => {
+    console.log('Assign button clicked for case:', caseId);
     setSelectedCaseForAssign(caseId);
     setSelectedAssignee('');
     setAssignModalOpen(true);
+    console.log('Modal should be open now, assignModalOpen:', true);
   };
 
   const confirmAssign = async () => {
@@ -373,8 +375,8 @@ const KycDashboard: React.FC = () => {
 
         {/* Assign Modal */}
         {assignModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 relative z-[10000]">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign KYC Case</h3>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -383,7 +385,7 @@ const KycDashboard: React.FC = () => {
                 <select
                   value={selectedAssignee}
                   onChange={(e) => setSelectedAssignee(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                 >
                   <option value="">Choose a compliance user...</option>
                   {allUsers.map((u) => (
@@ -395,13 +397,19 @@ const KycDashboard: React.FC = () => {
               </div>
               <div className="flex gap-3 justify-end">
                 <button
-                  onClick={() => setAssignModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  onClick={() => {
+                    console.log('Cancel clicked');
+                    setAssignModalOpen(false);
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={confirmAssign}
+                  onClick={() => {
+                    console.log('Assign clicked, calling confirmAssign');
+                    confirmAssign();
+                  }}
                   disabled={!selectedAssignee}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

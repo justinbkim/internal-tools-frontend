@@ -10,8 +10,55 @@ const api = axios.create({
   },
 });
 
-// Add auth headers to each request
+// Helper function to convert snake_case to camelCase
+const toCamelCase = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toCamelCase);
+  if (typeof obj !== 'object') return obj;
+
+  const newObj: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      newObj[camelKey] = toCamelCase(obj[key]);
+    }
+  }
+  return newObj;
+};
+
+// Helper function to convert camelCase to snake_case
+const toSnakeCase = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toSnakeCase);
+  if (typeof obj !== 'object') return obj;
+
+  const newObj: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      newObj[snakeKey] = toSnakeCase(obj[key]);
+    }
+  }
+  return newObj;
+};
+
+// Response interceptor to convert snake_case to camelCase
+api.interceptors.response.use((response) => {
+  response.data = toCamelCase(response.data);
+  return response;
+});
+
+// Combined request interceptor to handle both auth and case conversion
 api.interceptors.request.use((config) => {
+  // Convert camelCase to snake_case for data and params
+  if (config.data) {
+    config.data = toSnakeCase(config.data);
+  }
+  if (config.params) {
+    config.params = toSnakeCase(config.params);
+  }
+
+  // Add auth headers
   const userId = localStorage.getItem('userId');
   const userRole = localStorage.getItem('userRole');
   
@@ -31,6 +78,9 @@ export const getPublicUsers = () => {
       'X-User-Id': 'login-fetch',
       'X-User-Role': 'compliance_manager',
     },
+  }).then(response => {
+    response.data = toCamelCase(response.data);
+    return response;
   });
 };
 
