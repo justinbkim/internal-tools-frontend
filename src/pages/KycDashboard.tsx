@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api';
-import type { KycCase } from '../types';
+import type { KycCase, User } from '../types';
 import { 
-  User, 
   Shield, 
   Clock, 
   CheckCircle, 
@@ -13,7 +12,8 @@ import {
   Search,
   Filter,
   FileText,
-  TrendingUp
+  TrendingUp,
+  User as UserIcon
 } from 'lucide-react';
 
 const KycDashboard: React.FC = () => {
@@ -170,7 +170,7 @@ const KycDashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
+                <UserIcon className="w-4 h-4" />
                 <span>{user?.name}</span>
                 <span className="text-gray-400">•</span>
                 <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
@@ -247,7 +247,7 @@ const KycDashboard: React.FC = () => {
         <div className="card mb-6">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -trangray-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by name or email..."
