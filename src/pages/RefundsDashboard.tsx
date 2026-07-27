@@ -32,7 +32,9 @@ const RefundsDashboard: React.FC = () => {
           params.requestedBy = user?.id;
         }
         
+        console.log('Fetching refunds with params:', params);
         const response = await apiClient.getRefunds(params);
+        console.log('Refunds fetched:', response.data);
         setRefunds(response.data);
         setLoading(false);
       } catch (error) {

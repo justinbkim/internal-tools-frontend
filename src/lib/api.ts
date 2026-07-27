@@ -55,7 +55,9 @@ api.interceptors.request.use((config) => {
     config.data = toSnakeCase(config.data);
   }
   if (config.params) {
+    console.log('Original params:', config.params);
     config.params = toSnakeCase(config.params);
+    console.log('Converted params:', config.params);
   }
 
   // Add auth headers
