@@ -2,273 +2,310 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api';
 import type { KycCase } from '../types';
-import { Shield, AlertTriangle, CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
+import { 
+  User, 
+  Shield, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  ArrowUpRight,
+  Search,
+  Filter,
+  FileText,
+  TrendingUp
+} from 'lucide-react';
 
 const KycDashboard: React.FC = () => {
   const { user, userRole, logout } = useAuth();
   const [kycCases, setKycCases] = useState<KycCase[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCase, setSelectedCase] = useState<KycCase | null>(null);
-  const [decision, setDecision] = useState<'approved' | 'rejected'>('approved');
-  const [reason, setReason] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchKycCases();
-  }, [filterStatus]);
+    const fetchKycCases = async () => {
+      try {
+        const params: any = {};
+        if (statusFilter) params.status = statusFilter;
+        if (userRole === 'compliance_analyst') {
+          params.assigned_to = user?.id;
+        }
+        
+        const response = await apiClient.getKycCases(params);
+        setKycCases(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch KYC cases:', error);
+        setLoading(false);
+      }
+    };
 
-  const fetchKycCases = async () => {
-    try {
-      const params: any = {};
-      if (filterStatus) params.status = filterStatus;
-      
-      const response = await apiClient.getKycCases(params);
-      setKycCases(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch KYC cases:', error);
-      setLoading(false);
+    fetchKycCases();
+  }, [statusFilter, userRole, user?.id]);
+
+  const handleDecision = async (caseId: string, decision: 'approved' | 'rejected') => {
+    const reason = prompt(`Enter reason for ${decision}:`);
+    if (reason) {
+      try {
+        await apiClient.decideKycCase(caseId, { decision, reason });
+        // Refresh cases
+        const response = await apiClient.getKycCases();
+        setKycCases(response.data);
+      } catch (error) {
+        console.error('Failed to decide case:', error);
+      }
     }
   };
 
-  const handleDecide = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCase) return;
-
-    try {
-      await apiClient.decideKycCase(selectedCase.id, { decision, reason });
-      setDecision('approved');
-      setReason('');
-      setSelectedCase(null);
-      fetchKycCases();
-    } catch (error) {
-      console.error('Failed to decide KYC case:', error);
-      alert('Failed to submit decision. Make sure to provide a reason for rejection.');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'new': return 'bg-slate-100 text-slate-700';
+      case 'in_review': return 'bg-blue-100 text-blue-700';
+      case 'pending_info': return 'bg-amber-100 text-amber-700';
+      case 'approved': return 'bg-emerald-100 text-emerald-700';
+      case 'rejected': return 'bg-red-100 text-red-700';
+      case 'escalated': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-slate-100 text-slate-700';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'rejected':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'in_review':
-        return <Clock className="w-5 h-5 text-blue-500" />;
-      case 'escalated':
-        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
-      default:
-        return <Shield className="w-5 h-5 text-gray-500" />;
+      case 'new': return <Clock className="w-4 h-4" />;
+      case 'in_review': return <Search className="w-4 h-4" />;
+      case 'pending_info': return <AlertTriangle className="w-4 h-4" />;
+      case 'approved': return <CheckCircle className="w-4 h-4" />;
+      case 'rejected': return <XCircle className="w-4 h-4" />;
+      case 'escalated': return <ArrowUpRight className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
   };
 
-  const getRiskScoreColor = (score: number) => {
-    if (score >= 70) return 'text-red-600 bg-red-100';
-    if (score >= 40) return 'text-yellow-600 bg-yellow-100';
-    return 'text-green-600 bg-green-100';
+  const getRiskColor = (riskScore: number) => {
+    if (riskScore >= 70) return 'text-red-600 bg-red-50';
+    if (riskScore >= 40) return 'text-amber-600 bg-amber-50';
+    return 'text-emerald-600 bg-emerald-50';
   };
+
+  const filteredCases = kycCases.filter(kycCase => 
+    kycCase.applicant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    kycCase.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="text-xl">Loading KYC cases...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-slate-600 font-medium">Loading KYC cases...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">KYC Review Queue</h1>
-            <p className="text-sm text-gray-600">
-              Logged in as: {user?.name} ({userRole?.replace('_', ' ')})
-            </p>
-          </div>
-          <button
-            onClick={logout}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="mb-6 flex gap-4 items-center">
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="new">New</option>
-            <option value="in_review">In Review</option>
-            <option value="pending_info">Pending Info</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="escalated">Escalated</option>
-          </select>
-          <div className="text-sm text-gray-600">
-            {kycCases.length} cases
-          </div>
-        </div>
-
-        {/* Cases Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Cases List */}
-          <div className="space-y-4">
-            {kycCases.map((kycCase) => (
-              <div
-                key={kycCase.id}
-                onClick={() => setSelectedCase(kycCase)}
-                className={`bg-white p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  selectedCase?.id === kycCase.id
-                    ? 'border-blue-500 shadow-md'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Shield className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-slate-900">KYC Review</h1>
+                <p className="text-sm text-slate-600">Compliance dashboard</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <User className="w-4 h-4" />
+                <span>{user?.name}</span>
+                <span className="text-slate-400">•</span>
+                <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+                  {userRole?.replace('_', ' ')}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="btn-secondary text-sm"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(kycCase.status)}
-                    <span className="font-semibold text-gray-900">{kycCase.applicant_name}</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskScoreColor(kycCase.risk_score)}`}>
-                    Risk: {kycCase.risk_score}
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                  <div>
-                    <span className="font-medium">Email:</span> {kycCase.email}
-                  </div>
-                  <div>
-                    <span className="font-medium">Country:</span> {kycCase.country}
-                  </div>
-                  <div>
-                    <span className="font-medium">DOB:</span> {kycCase.dob}
-                  </div>
-                  <div>
-                    <span className="font-medium">Tax ID:</span> {kycCase.tax_id}
-                  </div>
-                </div>
-
-                {kycCase.flag_reason && (
-                  <div className="mt-2 text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                    <AlertTriangle className="w-4 h-4 inline mr-1" />
-                    {kycCase.flag_reason}
-                  </div>
-                )}
-
-                <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
-                  <span>Status: {kycCase.status.replace('_', ' ')}</span>
-                  <span>{new Date(kycCase.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))}
+                Sign Out
+              </button>
+            </div>
           </div>
+        </div>
+      </header>
 
-          {/* Decision Panel */}
-          {selectedCase && (
-            <div className="bg-white p-6 rounded-lg border border-gray-200 h-fit sticky top-4">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <UserCheck className="w-6 h-6" />
-                Case Decision
-              </h2>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between">
-                  <span className="font-medium">Applicant:</span>
-                  <span>{selectedCase.applicant_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Risk Score:</span>
-                  <span className={selectedCase.risk_score >= 70 ? 'text-red-600 font-bold' : ''}>
-                    {selectedCase.risk_score}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Status:</span>
-                  <span>{selectedCase.status.replace('_', ' ')}</span>
-                </div>
-                {selectedCase.decision_reason && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">Previous Decision:</span>
-                    <span>{selectedCase.decision_reason}</span>
-                  </div>
-                )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Total Cases</p>
+                <p className="text-2xl font-bold text-slate-900">{kycCases.length}</p>
               </div>
+              <div className="p-3 bg-indigo-100 rounded-lg">
+                <FileText className="w-6 h-6 text-indigo-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">In Review</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {kycCases.filter(c => c.status === 'in_review').length}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Search className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Approved</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {kycCases.filter(c => c.status === 'approved').length}
+                </p>
+              </div>
+              <div className="p-3 bg-emerald-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">High Risk</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {kycCases.filter(c => c.risk_score >= 70).length}
+                </p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+        </div>
 
-              {selectedCase.status === 'new' || selectedCase.status === 'in_review' ? (
-                <form onSubmit={handleDecide}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">Decision</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="approved"
-                          checked={decision === 'approved'}
-                          onChange={(e) => setDecision(e.target.value as 'approved' | 'rejected')}
-                          className="mr-2"
-                        />
-                        <span className="text-green-600">Approve</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="rejected"
-                          checked={decision === 'rejected'}
-                          onChange={(e) => setDecision(e.target.value as 'approved' | 'rejected')}
-                          className="mr-2"
-                        />
-                        <span className="text-red-600">Reject</span>
-                      </label>
-                    </div>
-                  </div>
+        {/* Filters */}
+        <div className="card mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-slate-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="select-field"
+              >
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="in_review">In Review</option>
+                <option value="pending_info">Pending Info</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="escalated">Escalated</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">
-                      Reason {decision === 'rejected' && <span className="text-red-500">*</span>}
-                    </label>
-                    <textarea
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
-                      placeholder={decision === 'rejected' ? 'Required for rejection' : 'Optional for approval'}
-                      required={decision === 'rejected'}
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-                    >
-                      Submit Decision
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCase(null)}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="text-center py-4 text-gray-500">
-                  This case has already been decided.
-                </div>
-              )}
+        {/* KYC Cases Table */}
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Applicant</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Risk Score</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Country</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Assigned To</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCases.map((kycCase) => (
+                  <tr key={kycCase.id} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="py-4 px-4">
+                      <div>
+                        <div className="font-medium text-slate-900">{kycCase.applicant_name}</div>
+                        <div className="text-sm text-slate-600">{kycCase.email}</div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(kycCase.status)}`}>
+                        {getStatusIcon(kycCase.status)}
+                        {kycCase.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-slate-400" />
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRiskColor(kycCase.risk_score)}`}>
+                          {kycCase.risk_score}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-slate-600">{kycCase.country}</td>
+                    <td className="py-4 px-4 text-sm text-slate-600">
+                      {kycCase.assigned_to || 'Unassigned'}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex gap-2">
+                        {kycCase.status === 'in_review' && (
+                          <>
+                            <button
+                              onClick={() => handleDecision(kycCase.id, 'approved')}
+                              className="btn-success text-xs px-3 py-1"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleDecision(kycCase.id, 'rejected')}
+                              className="btn-danger text-xs px-3 py-1"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {kycCase.status === 'new' && (
+                          <button className="btn-primary text-xs px-3 py-1">
+                            Assign
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredCases.length === 0 && (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600">No KYC cases found</p>
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

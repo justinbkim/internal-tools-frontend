@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import KycDashboard from './pages/KycDashboard';
 import RefundsDashboard from './pages/RefundsDashboard';
 import FeatureFlags from './pages/FeatureFlags';
+import { Shield } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: string[] }> = ({ 
   children, 
@@ -24,15 +25,18 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: string
 };
 
 const Unauthorized: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    <div className="bg-white p-8 rounded-lg shadow-md max-w-md">
-      <h1 className="text-2xl font-bold mb-4 text-red-600">Unauthorized</h1>
-      <p className="text-gray-600 mb-4">
-        You don't have permission to access this page.
+  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="card max-w-md text-center">
+      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Shield className="w-8 h-8 text-red-600" />
+      </div>
+      <h1 className="text-2xl font-bold text-slate-900 mb-2">Unauthorized Access</h1>
+      <p className="text-slate-600 mb-6">
+        You don't have permission to access this page. Please contact your administrator if you believe this is an error.
       </p>
       <button
         onClick={() => window.location.href = '/'}
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+        className="btn-primary w-full"
       >
         Return to Login
       </button>

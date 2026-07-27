@@ -2,375 +2,281 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api';
 import type { FeatureFlag } from '../types';
-import { ToggleLeft, ToggleRight, Plus, Edit, Trash2, Server } from 'lucide-react';
+import { 
+  User, 
+  Settings, 
+  Power, 
+  Zap, 
+  Search,
+  Filter,
+  ToggleLeft,
+  ToggleRight,
+  Globe,
+  Sliders
+} from 'lucide-react';
 
 const FeatureFlags: React.FC = () => {
   const { user, userRole, logout } = useAuth();
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
-  const [filterEnvironment, setFilterEnvironment] = useState<string>('');
-  const [newFlag, setNewFlag] = useState({
-    key: '',
-    description: '',
-    enabled: false,
-    rollout_percentage: 0,
-    environment: 'dev' as 'dev' | 'staging' | 'prod',
-  });
+  const [environmentFilter, setEnvironmentFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const fetchFlags = async () => {
+      try {
+        const params: any = {};
+        if (environmentFilter) params.environment = environmentFilter;
+        
+        const response = await apiClient.getFeatureFlags(params);
+        setFlags(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch feature flags:', error);
+        setLoading(false);
+      }
+    };
+
     fetchFlags();
-  }, [filterEnvironment]);
-
-  const fetchFlags = async () => {
-    try {
-      const params: any = {};
-      if (filterEnvironment) params.environment = filterEnvironment;
-      
-      const response = await apiClient.getFeatureFlags(params);
-      setFlags(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch feature flags:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleCreateFlag = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await apiClient.createFeatureFlag(newFlag);
-      setNewFlag({
-        key: '',
-        description: '',
-        enabled: false,
-        rollout_percentage: 0,
-        environment: 'dev',
-      });
-      setShowCreateForm(false);
-      fetchFlags();
-    } catch (error) {
-      console.error('Failed to create feature flag:', error);
-      alert('Failed to create feature flag');
-    }
-  };
+  }, [environmentFilter]);
 
   const handleToggle = async (key: string) => {
     try {
       await apiClient.toggleFeatureFlag(key);
-      fetchFlags();
+      // Refresh flags
+      const response = await apiClient.getFeatureFlags();
+      setFlags(response.data);
     } catch (error) {
-      console.error('Failed to toggle feature flag:', error);
-      alert('Failed to toggle feature flag');
+      console.error('Failed to toggle flag:', error);
     }
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingFlag) return;
-
-    try {
-      await apiClient.updateFeatureFlag(editingFlag.key, {
-        description: editingFlag.description,
-        enabled: editingFlag.enabled,
-        rollout_percentage: editingFlag.rollout_percentage,
-      });
-      setEditingFlag(null);
-      fetchFlags();
-    } catch (error) {
-      console.error('Failed to update feature flag:', error);
-      alert('Failed to update feature flag');
+  const getEnvironmentColor = (environment: string) => {
+    switch (environment) {
+      case 'dev': return 'bg-blue-100 text-blue-700';
+      case 'staging': return 'bg-purple-100 text-purple-700';
+      case 'prod': return 'bg-red-100 text-red-700';
+      default: return 'bg-slate-100 text-slate-700';
     }
   };
 
-  const handleDelete = async (key: string) => {
-    if (!confirm('Are you sure you want to delete this feature flag?')) return;
-
-    try {
-      await apiClient.deleteFeatureFlag(key);
-      fetchFlags();
-    } catch (error) {
-      console.error('Failed to delete feature flag:', error);
-      alert('Failed to delete feature flag');
-    }
+  const getRolloutColor = (percentage: number) => {
+    if (percentage === 0) return 'text-slate-600 bg-slate-50';
+    if (percentage === 100) return 'text-emerald-600 bg-emerald-50';
+    if (percentage >= 50) return 'text-blue-600 bg-blue-50';
+    return 'text-amber-600 bg-amber-50';
   };
 
-  const getEnvironmentColor = (env: string) => {
-    switch (env) {
-      case 'prod':
-        return 'bg-red-100 text-red-800';
-      case 'staging':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-green-100 text-green-800';
-    }
-  };
+  const filteredFlags = flags.filter(flag => 
+    flag.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    flag.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="text-xl">Loading feature flags...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-slate-600 font-medium">Loading feature flags...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Feature Flags Admin</h1>
-            <p className="text-sm text-gray-600">
-              Logged in as: {user?.name} ({userRole?.replace('_', ' ')})
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              {showCreateForm ? 'Cancel' : 'New Flag'}
-            </button>
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Create Flag Form */}
-        {showCreateForm && (
-          <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6">
-            <h2 className="text-xl font-bold mb-4">Create New Feature Flag</h2>
-            <form onSubmit={handleCreateFlag}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Key</label>
-                  <input
-                    type="text"
-                    value={newFlag.key}
-                    onChange={(e) => setNewFlag({ ...newFlag, key: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="feature_name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Environment</label>
-                  <select
-                    value={newFlag.environment}
-                    onChange={(e) => setNewFlag({ ...newFlag, environment: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="dev">Development</option>
-                    <option value="staging">Staging</option>
-                    <option value="prod">Production</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <input
-                    type="text"
-                    value={newFlag.description}
-                    onChange={(e) => setNewFlag({ ...newFlag, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Rollout Percentage</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newFlag.rollout_percentage}
-                    onChange={(e) => setNewFlag({ ...newFlag, rollout_percentage: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div className="flex items-center">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={newFlag.enabled}
-                      onChange={(e) => setNewFlag({ ...newFlag, enabled: e.target.checked })}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm font-medium">Enabled</span>
-                  </label>
-                </div>
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Settings className="w-5 h-5 text-amber-600" />
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Create Flag
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Edit Flag Form */}
-        {editingFlag && (
-          <div className="bg-white p-6 rounded-lg border border-gray-200 mb-6">
-            <h2 className="text-xl font-bold mb-4">Edit Feature Flag</h2>
-            <form onSubmit={handleUpdate}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Key</label>
-                  <input
-                    type="text"
-                    value={editingFlag.key}
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <input
-                    type="text"
-                    value={editingFlag.description}
-                    onChange={(e) => setEditingFlag({ ...editingFlag, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Rollout Percentage</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={editingFlag.rollout_percentage}
-                    onChange={(e) => setEditingFlag({ ...editingFlag, rollout_percentage: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div className="flex items-center">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={editingFlag.enabled}
-                      onChange={(e) => setEditingFlag({ ...editingFlag, enabled: e.target.checked })}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm font-medium">Enabled</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Update Flag
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingFlag(null)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="mb-6 flex gap-4 items-center">
-          <select
-            value={filterEnvironment}
-            onChange={(e) => setFilterEnvironment(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Environments</option>
-            <option value="dev">Development</option>
-            <option value="staging">Staging</option>
-            <option value="prod">Production</option>
-          </select>
-          <div className="text-sm text-gray-600">
-            {flags.length} flags
-          </div>
-        </div>
-
-        {/* Flags Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {flags.map((flag) => (
-            <div key={flag.key} className="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2">
-                  <Server className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold text-gray-900">{flag.key}</span>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getEnvironmentColor(flag.environment)}`}>
-                  {flag.environment}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-600 mb-3">{flag.description}</p>
-
-              <div className="flex justify-between items-center mb-3">
-                <div className="flex items-center gap-2">
-                  {flag.enabled ? (
-                    <ToggleRight className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <ToggleLeft className="w-5 h-5 text-gray-400" />
-                  )}
-                  <span className={`text-sm font-medium ${flag.enabled ? 'text-green-600' : 'text-gray-500'}`}>
-                    {flag.enabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600">{flag.rollout_percentage}% rollout</span>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleToggle(flag.key)}
-                  className="flex-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors"
-                >
-                  Toggle
-                </button>
-                <button
-                  onClick={() => setEditingFlag(flag)}
-                  className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(flag.key)}
-                  className="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="mt-3 text-xs text-gray-500">
-                Updated: {new Date(flag.updated_at).toLocaleDateString()}
+              <div>
+                <h1 className="text-xl font-semibold text-slate-900">Feature Flags</h1>
+                <p className="text-sm text-slate-600">Engineering dashboard</p>
               </div>
             </div>
-          ))}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <User className="w-4 h-4" />
+                <span>{user?.name}</span>
+                <span className="text-slate-400">•</span>
+                <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                  {userRole?.replace('_', ' ')}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="btn-secondary text-sm"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Total Flags</p>
+                <p className="text-2xl font-bold text-slate-900">{flags.length}</p>
+              </div>
+              <div className="p-3 bg-amber-100 rounded-lg">
+                <Settings className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Enabled</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {flags.filter(f => f.enabled).length}
+                </p>
+              </div>
+              <div className="p-3 bg-emerald-100 rounded-lg">
+                <Power className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">In Rollout</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {flags.filter(f => f.enabled && f.rollout_percentage > 0 && f.rollout_percentage < 100).length}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Sliders className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Production</p>
+                <p className="text-2xl font-bold text-slate-900">
+                  {flags.filter(f => f.environment === 'prod').length}
+                </p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <Globe className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="card mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by key or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-slate-400" />
+              <select
+                value={environmentFilter}
+                onChange={(e) => setEnvironmentFilter(e.target.value)}
+                className="select-field"
+              >
+                <option value="">All Environments</option>
+                <option value="dev">Development</option>
+                <option value="staging">Staging</option>
+                <option value="prod">Production</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature Flags Table */}
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Key</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Description</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Status</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Rollout</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Environment</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-slate-900">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFlags.map((flag) => (
+                  <tr key={flag.key} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-slate-900 font-mono">{flag.key}</div>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-slate-600">{flag.description}</td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        {flag.enabled ? (
+                          <ToggleRight className="w-5 h-5 text-emerald-600" />
+                        ) : (
+                          <ToggleLeft className="w-5 h-5 text-slate-400" />
+                        )}
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${flag.enabled ? 'text-emerald-600 bg-emerald-50' : 'text-slate-600 bg-slate-50'}`}>
+                          {flag.enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <Sliders className="w-4 h-4 text-slate-400" />
+                        <span className={`px-2 py-1 rounded-lg text-sm font-medium ${getRolloutColor(flag.rollout_percentage)}`}>
+                          {flag.rollout_percentage}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getEnvironmentColor(flag.environment)}`}>
+                        <Globe className="w-3 h-3" />
+                        {flag.environment}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleToggle(flag.key)}
+                          className={`text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+                            flag.enabled 
+                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' 
+                              : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          }`}
+                        >
+                          {flag.enabled ? 'Disable' : 'Enable'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredFlags.length === 0 && (
+            <div className="text-center py-12">
+              <Settings className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600">No feature flags found</p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };
