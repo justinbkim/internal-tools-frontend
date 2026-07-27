@@ -28,8 +28,8 @@ const RefundsDashboard: React.FC = () => {
       try {
         const params: any = {};
         if (statusFilter) params.status = statusFilter;
-        if (userRole === 'support_agent') {
-          params.requestedBy = user?.id;
+        if (userRole === 'support_agent' && user?.id) {
+          params.requestedBy = user.id;
         }
         
         console.log('Fetching refunds with params:', params);
@@ -73,8 +73,13 @@ const RefundsDashboard: React.FC = () => {
   const handleApprove = async (refundId: string) => {
     try {
       await apiClient.approveRefund(refundId);
-      // Refresh refunds
-      const response = await apiClient.getRefunds();
+      // Refresh refunds with same params
+      const params: any = {};
+      if (statusFilter) params.status = statusFilter;
+      if (userRole === 'support_agent' && user?.id) {
+        params.requestedBy = user.id;
+      }
+      const response = await apiClient.getRefunds(params);
       setRefunds(response.data);
     } catch (error) {
       console.error('Failed to approve refund:', error);
@@ -85,8 +90,13 @@ const RefundsDashboard: React.FC = () => {
   const handleSubmit = async (refundId: string) => {
     try {
       await apiClient.requestRefund(refundId);
-      // Refresh refunds
-      const response = await apiClient.getRefunds();
+      // Refresh refunds with same params
+      const params: any = {};
+      if (statusFilter) params.status = statusFilter;
+      if (userRole === 'support_agent' && user?.id) {
+        params.requestedBy = user.id;
+      }
+      const response = await apiClient.getRefunds(params);
       setRefunds(response.data);
     } catch (error) {
       console.error('Failed to submit refund:', error);
