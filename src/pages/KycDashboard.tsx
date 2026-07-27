@@ -18,6 +18,7 @@ import {
 
 const KycDashboard: React.FC = () => {
   const { user, userRole, logout } = useAuth();
+  console.log('KycDashboard rendering, user:', user, 'userRole:', userRole);
   const [kycCases, setKycCases] = useState<KycCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -30,6 +31,7 @@ const KycDashboard: React.FC = () => {
   useEffect(() => {
     const fetchKycCases = async () => {
       try {
+        console.log('Fetching KYC cases with params:', { statusFilter, userRole, userId: user?.id });
         const params: any = {};
         if (statusFilter) params.status = statusFilter;
         if (userRole === 'compliance_analyst') {
@@ -37,6 +39,7 @@ const KycDashboard: React.FC = () => {
         }
         
         const response = await apiClient.getKycCases(params);
+        console.log('KYC cases fetched:', response.data);
         setKycCases(response.data);
         setLoading(false);
       } catch (error) {
@@ -45,20 +48,30 @@ const KycDashboard: React.FC = () => {
       }
     };
 
-    fetchKycCases();
-  }, [statusFilter, userRole, user?.id]);
+    if (user) {
+      fetchKycCases();
+    } else {
+      console.log('No user, skipping fetch');
+      setLoading(false);
+    }
+  }, [statusFilter, userRole, user?.id, user]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        console.log('Fetching users for manager...');
         const response = await apiClient.getUsers();
+        console.log('Users fetched:', response.data);
         // Filter to only compliance roles
         const complianceUsers = response.data.filter(u => 
           u.role === 'compliance_analyst' || u.role === 'compliance_manager'
         );
+        console.log('Compliance users:', complianceUsers);
         setAllUsers(complianceUsers);
       } catch (error) {
         console.error('Failed to fetch users:', error);
+        // Don't break the whole dashboard if user fetch fails
+        setAllUsers([]);
       }
     };
 
