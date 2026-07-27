@@ -92,7 +92,7 @@ const Login: React.FC = () => {
                 Select User
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -trangray-y-1/2 w-5 h-5 text-gray-400" />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
