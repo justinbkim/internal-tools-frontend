@@ -124,6 +124,9 @@ export const apiClient = {
         'X-User-Id': localStorage.getItem('userId'),
         'X-User-Role': localStorage.getItem('userRole'),
       },
+    }).then(response => {
+      response.data = toCamelCase(response.data);
+      return response;
     });
   },
   getRefund: (id: string) => api.get<Refund>(`/refunds/${id}`),
