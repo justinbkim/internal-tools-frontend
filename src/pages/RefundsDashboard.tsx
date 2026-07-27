@@ -80,6 +80,18 @@ const RefundsDashboard: React.FC = () => {
     }
   };
 
+  const handleSubmit = async (refundId: string) => {
+    try {
+      await apiClient.requestRefund(refundId);
+      // Refresh refunds
+      const response = await apiClient.getRefunds();
+      setRefunds(response.data);
+    } catch (error) {
+      console.error('Failed to submit refund:', error);
+      alert('Failed to submit refund. Check console for details.');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-gray-100 text-gray-700';
@@ -300,7 +312,10 @@ const RefundsDashboard: React.FC = () => {
                           </button>
                         )}
                         {refund.status === 'pending' && userRole === 'support_agent' && (
-                          <button className="btn-primary text-xs px-3 py-1">
+                          <button 
+                            onClick={() => handleSubmit(refund.id)}
+                            className="btn-primary text-xs px-3 py-1"
+                          >
                             Submit
                           </button>
                         )}
